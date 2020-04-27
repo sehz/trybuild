@@ -22,6 +22,7 @@ pub struct Project {
     pub name: String,
     update: Update,
     pub has_pass: bool,
+    pub check_only: bool,
     has_compile_fail: bool,
     pub features: Option<Vec<String>>,
     pub workspace: PathBuf,
@@ -145,6 +146,7 @@ impl Runner {
             workspace,
             path_dependencies,
             manifest,
+            check_only: self.check_only
         })
     }
 
@@ -286,12 +288,15 @@ impl Test {
         build_stdout: Vec<u8>,
         variations: Variations,
     ) -> Result<()> {
+
+        println!("checking pass");
         let preferred = variations.preferred();
         if !success {
             message::failed_to_build(preferred);
             return Err(Error::CargoFail);
         }
 
+        println!("checking test");
         let mut output = cargo::run_test(project, name)?;
         output.stdout.splice(..0, build_stdout);
         message::output(preferred, &output);
